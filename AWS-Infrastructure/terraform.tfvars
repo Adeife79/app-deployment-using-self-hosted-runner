@@ -1,0 +1,5 @@
+eks_cluster_role = "eks-cluster-role"
+eks_node_role = "eks-node-role"
+eks_cluster = "demo-app-cluster"
+node_group_name = "app-demo-nodes"
+repository_name = "demo-app"

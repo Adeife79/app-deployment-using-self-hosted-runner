@@ -1,0 +1,76 @@
+name: Image Build and Deploy
+
+on: [push]
+
+env:
+    AWS_REGION: eu-north-1
+    EKS_CLUSTER: demo-app-cluster
+    S3_BUCKET_NAME: app-demo-tf-state
+
+jobs:
+    build:
+        runs-on: self-hosted
+
+        permissions:
+            id-token: write
+            contents: read
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                aws-region: ${{ env.AWS_REGION }}
+                role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_ID }}:role/github-role
+
+            - name: Create S3 Bucket 
+              run: |
+                aws s3api create-bucket --bucket "${{ env.S3_BUCKET_NAME}}" --region eu-north-1 --create-bucket-configuration LocationConstraint=eu-north-1
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v4
+
+            - name: Initialize Terraform
+              working-directory: AWS-Infrastructure
+              run: terraform init
+
+            - name: Terraform Plan
+              working-directory: AWS-Infrastructure
+              run: terraform plan
+             
+            - name: Apply Terraform
+              working-directory: AWS-Infrastructure
+              run: terraform apply -auto-approve
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build and Push App to ECR
+              run: |
+                docker build -t demo-app:v1 .
+                docker tag demo-app:v1 ${{ secrets.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-app:v1
+                docker push ${{ secrets.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/demo-app:v1
+
+            - name: Update Kubeconfig
+              run: |
+                aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER }}
+
+            - name: Deploy application
+              working-directory: k8s
+              run: |
+                kubectl apply -f deployment.yml
+                kubectl apply -f service.yml
+
+            - name: Get application URL
+              run: |
+                echo "Waiting for LoadBalancer..."
+                kubectl wait --for=jsonpath='{.status.loadBalancer.ingress[0].hostname}' service/demo-app-svc --timeout=6m
+                URL=$(kubectl get svc demo-app-svc -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+                echo "Application URL:http://$URL"
+
+            
+              
