@@ -17,12 +17,12 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v6
 
             - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v3
+              uses: aws-actions/configure-aws-credentials@v6
               with:
-                aws-region: us-east-1
+                aws-region: eu-north-1
                 role-to-assume: arn:aws:iam::779035456626:role/github-role
 
             - name: Create S3 Bucket 
