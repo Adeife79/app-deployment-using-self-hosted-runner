@@ -62,7 +62,7 @@ jobs:
                 aws s3api create-bucket --bucket "${{ env.S3_BUCKET_NAME}}" --region eu-north-1 --create-bucket-configuration LocationConstraint=eu-north-1
 
             - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v4
+              uses: hashicorp/setup-terraform@v3
 
             - name: Initialize Terraform
               working-directory: AWS-Infrastructure
