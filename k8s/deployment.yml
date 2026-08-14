@@ -14,6 +14,6 @@ spec:
     spec: 
       containers:
         - name: demo-app
-          image: 779035456626.dkr.ecr.eu-north-1.amazonaws.com/demo-app:v1
+          image: <account_id>.dkr.ecr.<aws_region>.amazonaws.com/demo-app:v1
           ports:
             - containerPort: 5050

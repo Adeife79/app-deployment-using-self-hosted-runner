@@ -54,8 +54,8 @@ jobs:
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v6
               with:
-                role-to-assume: arn:aws:iam::779035456626:role/github-role
-                aws-region: eu-north-1
+                role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_ID }}:role/github-role
+                aws-region: ${{ env.AWS_REGION }}
 
             - name: Create S3 Bucket 
               run: |
