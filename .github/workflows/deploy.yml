@@ -57,9 +57,6 @@ jobs:
                 role-to-assume: arn:aws:iam::779035456626:role/github-role
                 aws-region: eu-north-1
 
-            - name: Check AWS Identity
-              run: aws sts get-caller-identity
-
             - name: Create S3 Bucket 
               run: |
                 aws s3api create-bucket --bucket "${{ env.S3_BUCKET_NAME}}" --region eu-north-1 --create-bucket-configuration LocationConstraint=eu-north-1
