@@ -4,14 +4,23 @@ resource "aws_eks_cluster" "eks_cluster" {
 
     vpc_config {
         subnet_ids = [
-            data.aws_subnet.subnet1.id,
-            data.aws_subnet.subnet2.id
+            aws_subnet.public_1.id,
+            aws_subnet.public_2.id,
+            aws_subnet.private_1.id,
+            aws_subnet.private_2.id
         ]
+
+        endpoint_public_access  = true
+        endpoint_private_access = true
     }
 
     depends_on = [
         aws_iam_role_policy_attachment.eks_cluster_policy
     ]
+
+    tags = {
+        Name = var.eks_cluster
+    }
 }
 
 # EKS Node Group
@@ -23,11 +32,13 @@ resource "aws_eks_node_group" "eks_node" {
     node_role_arn = aws_iam_role.eks_node_role.arn
 
     subnet_ids = [
-        data.aws_subnet.subnet1.id,
-        data.aws_subnet.subnet2.id
+        aws_subnet.private_1.id,
+        aws_subnet.private_2.id
     ]
 
+    capacity_type  = "ON_DEMAND"
     instance_types = ["t3.medium"]
+    disk_size      = 20
 
     scaling_config {
         desired_size = 2
